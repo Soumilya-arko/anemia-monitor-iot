@@ -1,0 +1,57 @@
+#define RED_LED 25
+#define IR_LED 26
+#define PHOTO_PIN 34
+
+float hb = 0;
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED_LED, OUTPUT);
+  pinMode(IR_LED, OUTPUT);
+
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(IR_LED, LOW);
+
+  delay(2000);
+  Serial.println("PPG Sensor Started");
+}
+
+int readPhotodiode() {
+  delayMicroseconds(300);
+  return analogRead(PHOTO_PIN);
+}
+
+void loop() {
+
+  // RED measurement
+  digitalWrite(IR_LED, LOW);
+  digitalWrite(RED_LED, HIGH);
+  delay(5);
+  int redValue = readPhotodiode();
+  digitalWrite(RED_LED, LOW);
+
+  // IR measurement
+  digitalWrite(IR_LED, HIGH);
+  delay(5);
+  int irValue = readPhotodiode();
+  digitalWrite(IR_LED, LOW);
+
+  // Prevent divide by zero
+  if (irValue == 0) irValue = 1;
+
+  float ratio = (float)redValue / (float)irValue;
+
+  // Conceptual Hb estimation
+  hb = 8.0 + (ratio * 4.0);
+  hb = constrain(hb, 8.0, 16.0);
+
+  // Send to Node-RED
+  Serial.print(redValue);
+  Serial.print(",");
+  Serial.print(irValue);
+  Serial.print(",");
+  Serial.println(hb);
+
+  delay(1000);
+}
