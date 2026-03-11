@@ -1,0 +1,66 @@
+[
+  {
+    "id": "serial_in",
+    "type": "serial in",
+    "name": "ESP32 Serial",
+    "serial": "serial_config",
+    "x": 140,
+    "y": 140,
+    "wires": [["parse_data"]]
+  },
+  {
+    "id": "parse_data",
+    "type": "function",
+    "name": "Parse Optical Data",
+    "func": "let data = msg.payload.trim().split(',');\n\nif(data.length === 3){\n    let red = Number(data[0]);\n    let ir = Number(data[1]);\n    let hb = Number(data[2]);\n\n    if(!isNaN(red) && !isNaN(ir) && !isNaN(hb)){\n        return [\n            {payload: hb},\n            {payload: hb < 11 ? 'LOW' : 'NORMAL'},\n            {payload: red},\n            {payload: ir}\n        ];\n    }\n}\nreturn null;",
+    "outputs": 4,
+    "x": 360,
+    "y": 140,
+    "wires": [
+      ["hb_gauge"],
+      ["status_text"],
+      ["red_text"],
+      ["ir_text"]
+    ]
+  },
+  {
+    "id": "hb_gauge",
+    "type": "ui_gauge",
+    "name": "Hb Gauge",
+    "group": "ui_group",
+    "title": "Hemoglobin Trend",
+    "label": "g/dL",
+    "format": "{{value}}",
+    "min": 8,
+    "max": 16,
+    "x": 600,
+    "y": 100
+  },
+  {
+    "id": "status_text",
+    "type": "ui_text",
+    "group": "ui_group",
+    "label": "Anemia Status",
+    "format": "{{msg.payload}}",
+    "x": 600,
+    "y": 150
+  },
+  {
+    "id": "red_text",
+    "type": "ui_text",
+    "group": "ui_group",
+    "label": "Red LED Signal",
+    "format": "{{msg.payload}}",
+    "x": 600,
+    "y": 200
+  },
+  {
+    "id": "ir_text",
+    "type": "ui_text",
+    "group": "ui_group",
+    "label": "IR LED Signal",
+    "format": "{{msg.payload}}",
+    "x": 600,
+    "y": 250
+  }
+]
